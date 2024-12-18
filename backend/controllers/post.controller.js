@@ -201,9 +201,11 @@ export const togglePostLike = async (req, res) => {
     if (hasUserLikedPost) {
       await Post.updateOne({ _id: postId }, { $pull: { likes: userId } });
       await User.updateOne({ _id: userId }, { $pull: { likedPosts: postId } });
-      res.status(200).json({
-        message: "Post unliked",
-      });
+
+      const updatedLikes = post.likes.filter(
+        (id) => id.toString() !== userId.toString()
+      );
+      res.status(200).json(updatedLikes);
     } else {
       post.likes.push(userId);
       await User.updateOne({ _id: userId }, { $push: { likedPosts: postId } });
@@ -216,9 +218,10 @@ export const togglePostLike = async (req, res) => {
       });
 
       await notification.save();
-      res.status(200).json({
-        message: "Post liked",
-      });
+
+      const updatedLikes = post.likes;
+
+      res.status(200).json(updatedLikes);
     }
   } catch (error) {
     console.log("Error in toggle post like: ", error);
